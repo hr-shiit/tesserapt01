@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TESSERAPT - Blockchain Test</title>
+    
+    <!-- No external SDK needed - we'll use direct API calls -->
+    
+    <style>
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+        }
+        .log {
+            background: #111;
+            border: 1px solid #0f0;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success { color: #0f0; }
+        .error { color: #f00; }
+        .warning { color: #ff0; }
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #0ff;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 TESSERAPT Blockchain Integration Test</h1>
+    
+    <div class="log">
+        <h2>Test Results:</h2>
+        <div id="results"></div>
+    </div>
+    
+    <div>
+        <button onclick="testAptosSDK()">1. Test Aptos SDK</button>
+        <button onclick="testConnection()">2. Test Connection</button>
+        <button onclick="testWallet()">3. Test Wallet</button>
+        <button onclick="testBalance()">4. Test Balance Query</button>
+        <button onclick="testStaking()">5. Test Staking</button>
+    </div>
+    
+    <!-- Include our scripts -->
+    <script src="aptos-client.js"></script>
+    <script src="contracts/staking-contract.js"></script>
+    <script src="wallet-connect.js"></script>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(message, type = 'success') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            results.appendChild(div);
+            console.log(message);
+        }
+        
+        async function testAptosSDK() {
+            log('Testing Aptos SDK...', 'warning');
+            
+            if (typeof Aptos === 'undefined') {
+                log('❌ Aptos SDK not loaded!', 'error');
+                return false;
+            }
+            
+            log('✅ Aptos SDK loaded successfully', 'success');
+            log(`   SDK version: ${Aptos.VERSION || 'unknown'}`, 'success');
+            
+            try {
+                const client = new Aptos.Aptos({
+                    fullnode: 'https://fullnode.testnet.aptoslabs.com/v1'
+                });
+                log('✅ Aptos client created', 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Failed to create client: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testConnection() {
+            log('Testing blockchain connection...', 'warning');
+            
+            if (!window.aptosClient) {
+                log('❌ aptosClient not initialized!', 'error');
+                log('   Waiting 2 seconds and retrying...', 'warning');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+            
+            if (!window.aptosClient) {
+                log('❌ aptosClient still not available', 'error');
+                return false;
+            }
+            
+            if (!window.aptosClient.isInitialized) {
+                log('❌ aptosClient not initialized', 'error');
+                return false;
+            }
+            
+            log('✅ aptosClient is initialized', 'success');
+            
+            try {
+                const ledgerInfo = await window.aptosClient.client.get('');
+                log('✅ Connected to Aptos testnet', 'success');
+                log(`   Chain ID: ${ledgerInfo.chain_id}`, 'success');
+                log(`   Ledger version: ${ledgerInfo.ledger_version}`, 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Connection failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testWallet() {
+            log('Testing wallet connection...', 'warning');
+            
+            if (!window.walletManager) {
+                log('❌ walletManager not initialized!', 'error');
+                return false;
+            }
+            
+            log('✅ walletManager is initialized', 'success');
+            
+            if (!window.aptos) {
+                log('⚠️  Petra wallet not detected', 'warning');
+                log('   Please install Petra wallet extension', 'warning');
+                return false;
+            }
+            
+            log('✅ Petra wallet detected', 'success');
+            
+            try {
+                const isConnected = await window.aptos.isConnected();
+                if (isConnected) {
+                    const account = await window.aptos.account();
+                    log('✅ Wallet already connected', 'success');
+                    log(`   Address: ${account.address}`, 'success');
+                    return true;
+                } else {
+                    log('⚠️  Wallet not connected', 'warning');
+                    log('   Click "Connect Wallet" in the main app', 'warning');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Wallet test failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testBalance() {
+            log('Testing balance query...', 'warning');
+            
+            if (!window.aptos) {
+                log('❌ Petra wallet not available', 'error');
+                return false;
+            }
+            
+            try {
+                const isConnected = await window.aptos.isConnected();
+                if (!isConnected) {
+                    log('❌ Wallet not connected', 'error');
+                    log('   Please connect wallet first', 'warning');
+                    return false;
+                }
+                
+                const account = await window.aptos.account();
+                const address = account.address;
+                
+                log(`Querying balance for: ${address}`, 'warning');
+                
+                const balance = await window.aptosClient.getAccountBalance(address);
+                log(`✅ APT Balance: ${balance} APT`, 'success');
+                
+                // Try to get stAPT balance
+                try {
+                    const staptBalance = await window.aptosClient.view(
+                        'oracles_and_mocks::get_stapt_balance',
+                        [],
+                        [window.aptosClient.contractAddr, address]
+                    );
+                    const staptBalanceFormatted = window.aptosClient.octasToApt(staptBalance[0]);
+                    log(`✅ stAPT Balance: ${staptBalanceFormatted} stAPT`, 'success');
+                } catch (error) {
+                    log(`⚠️  stAPT balance query failed: ${error.message}`, 'warning');
+                    log('   This is normal if you haven\'t staked yet', 'warning');
+                }
+                
+                return true;
+            } catch (error) {
+                log(`❌ Balance query failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testStaking() {
+            log('Testing staking functionality...', 'warning');
+            
+            if (!window.aptos) {
+                log('❌ Petra wallet not available', 'error');
+                return false;
+            }
+            
+            try {
+                const isConnected = await window.aptos.isConnected();
+                if (!isConnected) {
+                    log('❌ Wallet not connected', 'error');
+                    return false;
+                }
+                
+                const account = await window.aptos.account();
+                const address = account.address;
+                
+                log('Building test staking transaction...', 'warning');
+                log('⚠️  This will prompt you to sign a transaction!', 'warning');
+                log('   Amount: 0.01 APT (test amount)', 'warning');
+                
+                const amount = 0.01;
+                const amountInOctas = Math.floor(amount * 100000000);
+                
+                const transaction = {
+                    function: `${window.aptosClient.contractAddr}::oracles_and_mocks::mint_stapt`,
+                    type_arguments: [],
+                    arguments: [window.aptosClient.contractAddr, amountInOctas.toString()]
+                };
+                
+                log('Transaction payload:', 'warning');
+                log(JSON.stringify(transaction, null, 2), 'warning');
+                
+                log('Submitting transaction...', 'warning');
+                const result = await window.aptos.signAndSubmitTransaction(transaction);
+                
+                log('✅ Transaction submitted!', 'success');
+                log(`   Transaction hash: ${result.hash}`, 'success');
+                log(`   Explorer: https://explorer.aptoslabs.com/txn/${result.hash}?network=testnet`, 'success');
+                
+                log('Waiting for confirmation...', 'warning');
+                await window.aptosClient.waitForTransaction(result.hash);
+                
+                log('✅ Transaction confirmed!', 'success');
+                log('✅ Staking test successful!', 'success');
+                
+                return true;
+            } catch (error) {
+                if (error.code === 4001) {
+                    log('⚠️  Transaction rejected by user', 'warning');
+                } else {
+                    log(`❌ Staking test failed: ${error.message}`, 'error');
+                }
+                return false;
+            }
+        }
+        
+        // Auto-run tests on load
+        window.addEventListener('load', async () => {
+            log('🚀 Starting automated tests...', 'warning');
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for initialization
+            
+            await testAptosSDK();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testConnection();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testWallet();
+            
+            log('✅ Automated tests complete!', 'success');
+            log('   Click buttons above to run individual tests', 'warning');
+        });
+    </script>
+</body>
+</html>

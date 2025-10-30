@@ -1,0 +1,18 @@
+[package]
+name = "yield_tokenization"
+version = "1.0.0"
+authors = ["Pendle Protocol Team"]
+
+[addresses]
+yield_tokenization = "0x7c6a215d114fecaecf81efb2e4e1c44a8a781d906aa4b51a0c0ef44f9fe70c16"
+pyth = "0x7e783b349d3e89cf5931af376ebeadbfab855b3fa239b7ada8f5a92fbea6b387"
+
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework", rev = "testnet" }
+AptosStdlib = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-stdlib", rev = "testnet" }
+MoveStdlib = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/move-stdlib", rev = "testnet" }
+
+# Pyth Network Oracle for real price feeds (using deployed contract)
+# Pyth = { git = "https://github.com/pyth-network/pyth-aptos.git", subdir = "pyth", rev = "main" }
+
+[dev-dependencies]

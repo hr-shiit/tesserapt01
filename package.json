@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@reown/walletkit": "^1.3.0",
+    "@walletconnect/core": "^2.22.4",
+    "@walletconnect/utils": "^2.22.4",
+    "aptos": "^1.21.0"
+  }
+}
