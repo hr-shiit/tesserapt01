@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TESSERAPT - DeFi Platform</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="logof1.png">
+    <link rel="shortcut icon" type="image/png" href="logof1.png">
+    <link rel="apple-touch-icon" href="logof1.png">
 
     <!-- No external SDK needed - we'll use direct API calls -->
     
@@ -1479,7 +1484,7 @@
         </div>
         <ul class="nav-menu">
             <li><a href="#stake">Stake</a></li>
-            <li><a href="#loan">Loan</a></li>
+            <li><a href="#loan">Borrow</a></li>
             <li><a href="#about">About Us</a></li>
         </ul>
         <button class="login-btn" onclick="openWalletModal()">CONNECT WALLET</button>
@@ -1513,7 +1518,7 @@
             <!-- Live Staking Stats Cards -->
             <div class="trade-image" style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 30px;">
                 <div style="font-size: 14px; color: #ccc; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px;">Current APY</div>
-                <div id="stake-apy" style="font-size: 42px; font-weight: bold; color: #fff; margin-bottom: 5px;">9.5%</div>
+                <div id="stake-apy" style="font-size: 42px; font-weight: bold; color: #fff; margin-bottom: 5px;">~9.5%</div>
                 <div style="font-size: 12px; color: #999;">Live Yield Rate</div>
             </div>
             
@@ -1603,14 +1608,11 @@
 
         <div class="yield-container">
             <div class="yield-info">
-                <h2 class="yield-title">YIELD OPTIMIZER <span style="font-size: 14px; color: #00ff00;">✓ LIVE</span></h2>
-                <p style="font-size: 12px; color: #00ff00; margin-top: -10px; margin-bottom: 15px;">
-                    ⚡ Real blockchain transactions on Aptos Testnet
-                </p>
+                <h2 class="yield-title">YIELD OPTIMIZER</h2>
 
                 <div class="yield-stats">
                     <div class="stat-card">
-                        <div class="stat-value" id="current-yield">9.5% APY</div>
+                        <div class="stat-value" id="current-yield">~9.5%</div>
                         <div class="stat-label">Current APY</div>
                     </div>
                     <div class="stat-card">
@@ -1625,31 +1627,21 @@
                         <div class="stat-value" id="apt-change">0.00%</div>
                         <div class="stat-label">24h Change</div>
                     </div>
-                </div>
-                
-                <!-- Live Market Data Section -->
-                <div style="margin-top: 30px; padding: 20px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                    <h3 style="margin-bottom: 20px; font-size: 18px; color: #fff;">📊 Live Market Data</h3>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
-                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span style="color: #ccc;">PT/APT Rate:</span>
-                            <span id="pt-apt-rate" style="color: #fff; font-weight: bold;">1.00</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span style="color: #ccc;">YT/APT Rate:</span>
-                            <span id="yt-apt-rate" style="color: #fff; font-weight: bold;">0.125</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span style="color: #ccc;">Earned Yield:</span>
-                            <span id="earned-yield" style="color: #00ff88; font-weight: bold;">0.00 APT</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                            <span style="color: #ccc;">Portfolio Value:</span>
-                            <span id="portfolio-value" style="color: #fff; font-weight: bold;">$0.00</span>
-                        </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="pt-apt-rate">1.00</div>
+                        <div class="stat-label">PT/APT Rate</div>
                     </div>
-                    <div style="margin-top: 15px; text-align: center; font-size: 12px; color: #888;">
-                        <span>🔄 Updates every 10 seconds</span>
+                    <div class="stat-card">
+                        <div class="stat-value" id="yt-apt-rate">0.125</div>
+                        <div class="stat-label">YT/APT Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="earned-yield">0.00 APT</div>
+                        <div class="stat-label">Earned Yield</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="portfolio-value">$0.00</div>
+                        <div class="stat-label">Portfolio Value</div>
                     </div>
                 </div>
 
@@ -1678,7 +1670,7 @@
 
                 <div class="input-group">
                     <label class="input-label">Estimated Annual Return</label>
-                    <input type="text" class="input-field" id="estimatedAPY" value="9.5% APY" readonly>
+                    <input type="text" class="input-field" id="estimatedAPY" value="~9.5%" readonly>
                 </div>
 
                 <div class="yield-actions">
@@ -1740,7 +1732,7 @@
 
                     <div class="data-item">
                         <span class="data-label">Current Yield</span>
-                        <span class="data-value" id="portfolioAPY">9.5% APY</span>
+                        <span class="data-value" id="portfolioAPY">~9.5%</span>
                     </div>
 
                     <div class="data-item">
