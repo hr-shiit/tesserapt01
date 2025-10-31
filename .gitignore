@@ -1,1 +1,8 @@
 node_modules
+*.exe
+*.zip
+*.dmg
+*.pkg
+.DS_Store
+build/
+.aptos/

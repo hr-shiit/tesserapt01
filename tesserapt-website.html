@@ -1786,12 +1786,27 @@
 
             <div class="modal-input-group">
                 <label class="modal-input-label">Amount to Sell</label>
-                <input type="number" class="modal-input-field" id="sellAmount" placeholder="0.00">
+                <input type="number" class="modal-input-field" id="sellAmount" placeholder="0.00" oninput="updateEstimatedReceive()">
             </div>
 
             <div class="modal-input-group">
                 <label class="modal-input-label">Estimated Receive</label>
-                <input type="text" class="modal-input-field" id="estimatedReceive" value="0.00 APT" readonly>
+                <input type="text" class="modal-input-field" id="estimatedReceive" value="0.00" readonly>
+            </div>
+            
+            <div style="background: rgba(255,255,255,0.05); border-radius: 8px; padding: 12px; margin-top: 10px;">
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+                    <span style="color: #999;">Exchange Rate:</span>
+                    <span id="exchangeRate" style="color: #fff;">-</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+                    <span style="color: #999;">Trading Fee:</span>
+                    <span style="color: #fff;">0.3%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                    <span style="color: #999;">Slippage Tolerance:</span>
+                    <span style="color: #fff;">1.0%</span>
+                </div>
             </div>
 
             <div class="modal-actions">
@@ -2076,51 +2091,94 @@
             document.querySelectorAll('.modal-token-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
 
-            // Update available balance
+            // Update available balance from staking data
             const balanceField = document.getElementById('availableBalance');
-            if (tokenType === 'PT') {
-                balanceField.value = '50.00 PT';
+            if (window.tesseraptPlatform && window.tesseraptPlatform.stakingData) {
+                const balance = tokenType === 'PT' ? 
+                    window.tesseraptPlatform.stakingData.ptTokens : 
+                    window.tesseraptPlatform.stakingData.ytTokens;
+                balanceField.value = `${balance.toFixed(2)} ${tokenType}`;
             } else {
-                balanceField.value = '50.00 YT';
+                balanceField.value = `0.00 ${tokenType}`;
             }
 
             // Reset other fields
             document.getElementById('sellAmount').value = '';
-            document.getElementById('estimatedReceive').value = '0.00 APT';
+            updateEstimatedReceive();
         }
 
-        // Update estimated receive when amount changes
-        document.addEventListener('DOMContentLoaded', function () {
+        // Update estimated receive using real AMM calculations
+        function updateEstimatedReceive() {
             const sellAmountField = document.getElementById('sellAmount');
             const estimatedReceiveField = document.getElementById('estimatedReceive');
+            const exchangeRateField = document.getElementById('exchangeRate');
 
-            if (sellAmountField && estimatedReceiveField) {
-                sellAmountField.addEventListener('input', function () {
-                    const amount = parseFloat(this.value) || 0;
-                    let estimated = 0;
-
-                    if (selectedTokenType === 'PT') {
-                        // PT tokens are 1:1 with APT
-                        estimated = amount;
-                    } else {
-                        // YT tokens are worth 0.095 APT each (9.5% yield)
-                        estimated = amount * 0.095;
-                    }
-
-                    estimatedReceiveField.value = `${estimated.toFixed(2)} APT`;
-                });
+            const amount = parseFloat(sellAmountField.value) || 0;
+            
+            if (amount <= 0) {
+                const toToken = selectedTokenType === 'PT' ? 'YT' : 'PT';
+                estimatedReceiveField.value = `0.00 ${toToken}`;
+                exchangeRateField.textContent = '-';
+                return;
             }
-        });
 
-        function confirmTrade() {
-            const amount = document.getElementById('sellAmount').value;
-            const estimated = document.getElementById('estimatedReceive').value;
-
-            if (amount && parseFloat(amount) > 0) {
-                alert(`Trade confirmed!\nSelling: ${amount} ${selectedTokenType}\nReceiving: ${estimated}\n\n(Demo functionality)`);
-                closeTradingModal();
+            // Use PT/YT AMM contract for real calculations
+            if (window.ptytAMMContract && window.ptytAMMContract.isReady()) {
+                const estimated = window.ptytAMMContract.calculateSwapOutput(amount, selectedTokenType);
+                const toToken = selectedTokenType === 'PT' ? 'YT' : 'PT';
+                const rate = estimated / amount;
+                
+                estimatedReceiveField.value = `${estimated.toFixed(4)} ${toToken}`;
+                exchangeRateField.textContent = `1 ${selectedTokenType} = ${rate.toFixed(4)} ${toToken}`;
             } else {
+                // Fallback calculation if AMM not ready
+                let estimated = 0;
+                const toToken = selectedTokenType === 'PT' ? 'YT' : 'PT';
+                
+                if (selectedTokenType === 'PT') {
+                    estimated = amount * 0.095; // PT to YT
+                } else {
+                    estimated = amount / 0.095; // YT to PT
+                }
+                
+                estimatedReceiveField.value = `${estimated.toFixed(4)} ${toToken}`;
+                exchangeRateField.textContent = `Pool loading...`;
+            }
+        }
+
+        async function confirmTrade() {
+            const amount = parseFloat(document.getElementById('sellAmount').value);
+
+            if (!amount || amount <= 0) {
                 alert('Please enter a valid amount to trade');
+                return;
+            }
+
+            // Check if platform is initialized
+            if (!window.tesseraptPlatform) {
+                alert('Platform not initialized. Please refresh the page.');
+                return;
+            }
+
+            try {
+                // Execute trade through platform
+                const result = await window.tesseraptPlatform.confirmTrade();
+                
+                if (result && result.success) {
+                    const toToken = selectedTokenType === 'PT' ? 'YT' : 'PT';
+                    alert(`✅ ${result.message}\n\nSwapped: ${amount} ${selectedTokenType}\nReceived: ~${result.receiveAmount.toFixed(4)} ${toToken}\n\nTransaction: ${result.txHash}`);
+                    closeTradingModal();
+                    
+                    // Refresh token portfolio
+                    if (window.tesseraptPlatform.updateTokenPortfolio) {
+                        window.tesseraptPlatform.updateTokenPortfolio();
+                    }
+                } else {
+                    alert('Trade failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Trade error:', error);
+                alert(`Trade failed: ${error.message}`);
             }
         }
 
@@ -2196,6 +2254,7 @@
     <!-- Include Contract Interfaces -->
     <script src="contracts/staking-contract.js"></script>
     <script src="contracts/amm-contract.js"></script>
+    <script src="contracts/pt-yt-amm-contract.js"></script>
     
     <!-- Include Wallet Manager -->
     <script src="wallet-connect.js"></script>

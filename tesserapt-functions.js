@@ -479,44 +479,42 @@ class TesseraptPlatform {
             
             console.log(`💱 Trading ${sellAmount} ${sellToken} tokens...`);
             
-            // Calculate receive amount based on token type
-            let receiveAmount = 0;
+            // Check if PT/YT AMM contract is available
+            if (!window.ptytAMMContract || !window.ptytAMMContract.isReady()) {
+                throw new Error('Trading pool not ready. Please wait a moment and try again.');
+            }
+
+            // Calculate expected output using AMM formula
+            const expectedOutput = window.ptytAMMContract.calculateSwapOutput(sellAmount, sellToken);
+            const toToken = sellToken === 'PT' ? 'YT' : 'PT';
+            
+            console.log(`📊 Expected output: ${expectedOutput.toFixed(4)} ${toToken}`);
+            
+            // Calculate minimum output with 1% slippage protection
+            const minOutput = window.ptytAMMContract.calculateMinOutput(expectedOutput, 1);
+            
+            console.log(`🛡️ Min output (1% slippage): ${minOutput.toFixed(4)} ${toToken}`);
+            
+            // Execute the actual trade through PT/YT AMM contract
+            let result;
+            const walletAddress = this.walletManager.walletAddress;
+            
             if (sellToken === 'PT') {
-                // PT tokens are approximately 1:1 with APT (principal value)
-                receiveAmount = sellAmount * 0.98; // 2% trading fee
-            } else if (sellToken === 'YT') {
-                // YT tokens represent yield, worth less than PT
-                receiveAmount = sellAmount * 0.12; // ~12% of principal (yield component)
+                result = await window.ptytAMMContract.swapPTForYT(sellAmount, minOutput, walletAddress);
+            } else {
+                result = await window.ptytAMMContract.swapYTForPT(sellAmount, minOutput, walletAddress);
             }
             
-            console.log(`✅ Trade calculated: ${sellAmount} ${sellToken} → ${receiveAmount.toFixed(4)} APT`);
-            
-            // Execute the actual trade through AMM contract
-            let txHash = null;
-            try {
-                if (window.ammContract && this.walletManager.isConnected()) {
-                    // Attempt real blockchain transaction
-                    const result = await window.ammContract.swapTokens(
-                        sellToken,
-                        'APT',
-                        sellAmount
-                    );
-                    txHash = result.hash || result.transactionHash;
-                    console.log(`✅ Blockchain trade executed: ${txHash}`);
-                }
-            } catch (error) {
-                console.warn('⚠️ Blockchain trade failed, using local update:', error.message);
-                // Continue with local balance update as fallback
-            }
+            console.log(`✅ Blockchain trade executed: ${result.hash}`);
             
             return {
                 success: true,
                 sellToken: sellToken,
                 sellAmount: sellAmount,
-                receiveToken: 'APT',
-                receiveAmount: receiveAmount,
-                txHash: txHash,
-                message: txHash ? `Trade completed! Transaction: ${txHash}` : 'Trade completed!'
+                receiveToken: toToken,
+                receiveAmount: expectedOutput,
+                txHash: result.hash,
+                message: `Trade completed! Transaction: ${result.hash.substring(0, 10)}...`
             };
             
         } catch (error) {

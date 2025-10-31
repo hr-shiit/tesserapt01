@@ -8,19 +8,19 @@ class TesseraptSystemMonitor {
         this.alerts = [];
         this.monitoringInterval = 60000; // 1 minute
         this.isMonitoring = false;
-        
+
         this.init();
     }
 
     init() {
         console.log('🔍 Initializing TESSERAPT System Monitor');
-        
+
         this.setupHealthChecks();
         this.startMonitoring();
-        
+
         // Expose debug interface
         window.systemMonitor = this;
-        
+
         console.log('✅ System Monitor initialized');
     }
 
@@ -163,7 +163,7 @@ class TesseraptSystemMonitor {
                 'confirmTrade'
             ];
 
-            const missingFunctions = criticalFunctions.filter(func => 
+            const missingFunctions = criticalFunctions.filter(func =>
                 typeof window.tesseraptPlatform[func] !== 'function'
             );
 
@@ -259,7 +259,7 @@ class TesseraptSystemMonitor {
                 '.lending-section'
             ];
 
-            const missingElements = criticalElements.filter(selector => 
+            const missingElements = criticalElements.filter(selector =>
                 !document.querySelector(selector)
             );
 
@@ -349,14 +349,14 @@ class TesseraptSystemMonitor {
         try {
             const result = await check.check();
             this.recordMetric(`healthCheck.${checkKey}`, result.status);
-            
+
             // Store result
             this.metrics.set(`lastHealthCheck.${checkKey}`, result);
 
             return result;
         } catch (error) {
             console.error(`Health check ${checkKey} failed:`, error);
-            
+
             const errorResult = {
                 status: 'critical',
                 details: { error: error.message },
@@ -394,9 +394,9 @@ class TesseraptSystemMonitor {
 
     updateSystemStatus(results) {
         let overallStatus = 'healthy';
-        
+
         const statuses = Object.values(results).map(r => r.status);
-        
+
         if (statuses.includes('critical')) {
             overallStatus = 'critical';
         } else if (statuses.includes('warning')) {
@@ -404,7 +404,7 @@ class TesseraptSystemMonitor {
         }
 
         this.recordMetric('system.overallStatus', overallStatus);
-        
+
         // Update UI indicator if exists
         this.updateStatusIndicator(overallStatus);
     }
@@ -432,7 +432,7 @@ class TesseraptSystemMonitor {
         };
 
         this.alerts.push(alert);
-        
+
         // Keep only last 100 alerts
         if (this.alerts.length > 100) {
             this.alerts.shift();
@@ -481,7 +481,7 @@ class TesseraptSystemMonitor {
     getMetric(name, limit = 100) {
         const metricHistory = this.metrics.get(name);
         if (!metricHistory) return [];
-        
+
         return metricHistory.slice(-limit);
     }
 
@@ -524,14 +524,14 @@ class TesseraptSystemMonitor {
 
     getSystemHealth() {
         const healthResults = {};
-        
+
         for (const [key, check] of this.healthChecks) {
             const lastResult = this.metrics.get(`lastHealthCheck.${key}`);
             healthResults[key] = lastResult || { status: 'unknown', details: {} };
         }
 
         const overallStatus = this.metrics.get('system.overallStatus');
-        
+
         return {
             overall: overallStatus ? overallStatus[overallStatus.length - 1]?.value : 'unknown',
             components: healthResults,
@@ -571,7 +571,7 @@ class TesseraptSystemMonitor {
         console.log('Performance Metrics:', this.getPerformanceMetrics());
         console.log('Active Alerts:', this.alerts.filter(a => !a.acknowledged));
         console.log('Monitoring Status:', this.isMonitoring ? 'Active' : 'Inactive');
-        
+
         return this.exportDiagnostics();
     }
 }
@@ -579,7 +579,7 @@ class TesseraptSystemMonitor {
 // Initialize system monitor
 let systemMonitor;
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Wait a bit for other systems to initialize
     setTimeout(() => {
         systemMonitor = new TesseraptSystemMonitor();
