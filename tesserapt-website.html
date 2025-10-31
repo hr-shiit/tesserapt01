@@ -1632,7 +1632,7 @@
                         <div class="stat-label">PT/APT Rate</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="yt-apt-rate">0.125</div>
+                        <div class="stat-value" id="yt-apt-rate">0.095</div>
                         <div class="stat-label">YT/APT Rate</div>
                     </div>
                     <div class="stat-card">
@@ -1737,12 +1737,12 @@
 
                     <div class="data-item">
                         <span class="data-label">PT/APT Rate</span>
-                        <span class="data-value">1.00</span>
+                        <span class="data-value" id="market-pt-apt-rate">1.00</span>
                     </div>
 
                     <div class="data-item">
                         <span class="data-label">YT/APT Rate</span>
-                        <span class="data-value">0.125</span>
+                        <span class="data-value" id="market-yt-apt-rate">0.095</span>
                     </div>
 
                     <div class="data-item">
@@ -2103,8 +2103,8 @@
                         // PT tokens are 1:1 with APT
                         estimated = amount;
                     } else {
-                        // YT tokens are worth 0.125 APT each (12.5% yield)
-                        estimated = amount * 0.125;
+                        // YT tokens are worth 0.095 APT each (9.5% yield)
+                        estimated = amount * 0.095;
                     }
 
                     estimatedReceiveField.value = `${estimated.toFixed(2)} APT`;

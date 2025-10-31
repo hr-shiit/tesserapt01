@@ -16,7 +16,7 @@ class LiveDataDashboard {
             aptChange24h: 0,
             currentYield: 9.5,
             ptAptRate: 1.00,
-            ytAptRate: 0.125,
+            ytAptRate: 0.095,
             totalStaked: 0,
             earnedYield: 0,
             portfolioValue: 0,
@@ -154,8 +154,8 @@ class LiveDataDashboard {
             this.data.portfolioValue = staptValue * this.data.aptPrice;
         }
 
-        // YT/APT rate is typically yield component (12.5% of principal)
-        this.data.ytAptRate = 0.125;
+        // YT/APT rate is typically yield component (9.5% of principal)
+        this.data.ytAptRate = 0.095;
     }
 
     // Update UI elements
@@ -210,11 +210,14 @@ class LiveDataDashboard {
         const marketChangeClass = this.data.aptChange24h >= 0 ? 'positive' : 'negative';
         const marketChangeSign = this.data.aptChange24h >= 0 ? '+' : '';
         this.updateElement('market-apt-change', `${marketChangeSign}${this.data.aptChange24h.toFixed(2)}%`, marketChangeClass);
-        
+
         // Update market sidebar staking data
         this.updateElement('market-total-staked', `${this.data.totalStaked.toFixed(2)} APT`);
         this.updateElement('market-earned-yield', `${this.data.earnedYield.toFixed(2)} APT`, 'positive');
         this.updateElement('market-portfolio-value', `$${this.data.portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
+        this.updateElement('portfolioAPY', `~${this.data.currentYield.toFixed(1)}%`);
+        this.updateElement('market-pt-apt-rate', this.data.ptAptRate.toFixed(2));
+        this.updateElement('market-yt-apt-rate', this.data.ytAptRate.toFixed(3));
     }
 
     // Update lending section data cards

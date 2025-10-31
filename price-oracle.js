@@ -441,7 +441,7 @@ class TesseraptPriceOracle {
     // YIELD CALCULATION METHODS
     // ==========================================
 
-    calculateYieldValue(principalAmount, token, yieldRate = 0.125) {
+    calculateYieldValue(principalAmount, token, yieldRate = 0.095) {
         const tokenPrice = this.getPrice(token);
         if (!tokenPrice) return 0;
 

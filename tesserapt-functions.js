@@ -348,7 +348,7 @@ class TesseraptPlatform {
             const ytValueEl = document.querySelector('.token-card:last-child .token-value');
 
             if (ytAmountEl && ytValueEl) {
-                const yieldAmount = ytTokens * 0.125; // 12.5% yield
+                const yieldAmount = ytTokens * 0.095; // 9.5% yield
                 ytAmountEl.textContent = `${ytTokens.toFixed(2)} YT`;
                 const ytValue = yieldAmount * this.getTokenPrice(token);
                 ytValueEl.textContent = `≈ ${yieldAmount.toFixed(2)} ${token} ($${ytValue.toLocaleString()})`;
@@ -979,7 +979,7 @@ class TesseraptPlatform {
                 if (this.selectedTokenType === 'PT') {
                     estimated = amount; // PT tokens are 1:1 with APT
                 } else {
-                    estimated = amount * 0.125; // YT tokens are worth 12.5% of APT
+                    estimated = amount * 0.095; // YT tokens are worth 9.5% of APT
                 }
 
                 estimatedReceiveField.value = `${estimated.toFixed(2)} APT`;
