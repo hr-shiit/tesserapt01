@@ -145,7 +145,7 @@ class TesseraptPriceOracle {
 
         // Mock implementation - replace with actual CMC API
         const mockPrices = {
-            'APT': { price: 25.50, change24h: 2.5 },
+            'APT': { price: 3.25, change24h: 2.5 },
             'BTC': { price: 50000, change24h: 1.2 },
             'ETH': { price: 3000, change24h: -0.8 },
             'USDC': { price: 1.00, change24h: 0.01 },
@@ -201,7 +201,7 @@ class TesseraptPriceOracle {
 
         // Generate realistic mock prices with some volatility
         const basePrices = {
-            'APT': 25.00,
+            'APT': 3.25,
             'BTC': 50000,
             'ETH': 3000,
             'USDC': 1.00,
@@ -403,8 +403,8 @@ class TesseraptPriceOracle {
     }
 
     initializeFallbackPrices() {
-        // Set initial fallback prices
-        this.fallbackPrices.set('APT', 25.00);
+        // Set initial fallback prices (realistic current market prices)
+        this.fallbackPrices.set('APT', 3.25);
         this.fallbackPrices.set('BTC', 50000);
         this.fallbackPrices.set('ETH', 3000);
         this.fallbackPrices.set('USDC', 1.00);

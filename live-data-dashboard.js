@@ -204,6 +204,17 @@ class LiveDataDashboard {
 
         // Update lending section cards
         this.updateLendingCards();
+
+        // Update market sidebar APT price and change
+        this.updateElement('market-apt-price', `$${this.data.aptPrice.toFixed(2)}`);
+        const marketChangeClass = this.data.aptChange24h >= 0 ? 'positive' : 'negative';
+        const marketChangeSign = this.data.aptChange24h >= 0 ? '+' : '';
+        this.updateElement('market-apt-change', `${marketChangeSign}${this.data.aptChange24h.toFixed(2)}%`, marketChangeClass);
+        
+        // Update market sidebar staking data
+        this.updateElement('market-total-staked', `${this.data.totalStaked.toFixed(2)} APT`);
+        this.updateElement('market-earned-yield', `${this.data.earnedYield.toFixed(2)} APT`, 'positive');
+        this.updateElement('market-portfolio-value', `$${this.data.portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`);
     }
 
     // Update lending section data cards
